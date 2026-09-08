@@ -6,3 +6,10 @@ download_future: true # Default: true
 
 # If you want to ignore some days in the week. For example 1 is Monday, 2 is Tuesday, etc. Format: [1, 3, 5]
 days_to_ignore: []
+
+# Letter prefixes (building codes) to strip from room names, useful if you mostly stay
+# in one building and don't need to see its letter on every event. For example, with
+# strip_room_prefixes: [S], room "S312" becomes "312", while "R203" is left as-is.
+# Only strips when the letter is immediately followed by a digit, so names like "SamS"
+# are never touched. Format: [S, R]
+strip_room_prefixes: []
