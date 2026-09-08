@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -11,14 +12,28 @@ import json
 Lesson = Dict[str, Any]
 
 
-def parse_json_timetable(filename: str, days_to_ignore: Iterable[int] | None = None) -> List[Lesson]:
+def _strip_room_prefix(abbrev: str, prefixes: set[str]) -> str:
+    match = re.match(r'^([A-Za-z])(\d.*)$', abbrev)
+    if match and match.group(1).upper() in prefixes:
+        return match.group(2)
+    return abbrev
+
+
+def parse_json_timetable(
+    filename: str,
+    days_to_ignore: Iterable[int] | None = None,
+    strip_room_prefixes: Iterable[str] | None = None,
+) -> List[Lesson]:
     days_to_ignore = set(days_to_ignore or [])
+    prefixes = {p.upper() for p in (strip_room_prefixes or [])}
     lessons: List[Lesson] = []
 
     with open(filename, 'r', encoding='utf-8') as timetable_file:
         data = json.load(timetable_file)
 
-    rooms: Dict[int, str] = {room['Id']: room['Abbrev'] for room in data.get('Rooms', [])}
+    rooms: Dict[int, str] = {
+        room['Id']: _strip_room_prefix(room['Abbrev'], prefixes) for room in data.get('Rooms', [])
+    }
     subjects: Dict[int, str] = {subject['Id']: subject['Name'] for subject in data.get('Subjects', [])}
     teachers: Dict[int, str] = {teacher['Id']: teacher['Name'] for teacher in data.get('Teachers', [])}
     hours: Dict[int, Dict[str, str]] = {

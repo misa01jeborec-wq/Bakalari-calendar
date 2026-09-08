@@ -81,9 +81,10 @@ def main() -> None:
             access_token, refresh_token = refresh_tokens(school_url, username, password, refresh_token)
             bakalari.get_timetable(school_url, access_token, True)
 
-    lessons = parse_json_timetable('timetable.json', config.get('days_to_ignore'))
+    strip_room_prefixes = config.get('strip_room_prefixes')
+    lessons = parse_json_timetable('timetable.json', config.get('days_to_ignore'), strip_room_prefixes)
     if config.get('download_future'):
-        lessons += parse_json_timetable('timetable_future.json', config.get('days_to_ignore'))
+        lessons += parse_json_timetable('timetable_future.json', config.get('days_to_ignore'), strip_room_prefixes)
 
     create_ics(lessons, config.get('path', './timetable.ics'))
 
