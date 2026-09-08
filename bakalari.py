@@ -26,10 +26,11 @@ def get_token(
 
     response = requests.post(url, data=body, headers=head)
 
-    # Fallback to username/password if refresh token invalid/expired
-    if response.status_code == 400 and response.json().get("error_description") == "The specified token is invalid.":
+    # Fallback to username/password if the refresh token is rejected for any reason
+    if refresh_token and response.status_code == 400:
+        reason = response.json().get("error_description", "unknown reason")
         body = f"client_id=ANDR&grant_type=password&username={username}&password={password}"
-        print("Refresh token invalid, retrying with username and password")
+        print(f"Refresh token rejected ({reason}), retrying with username and password")
         response = requests.post(url, data=body, headers=head)
 
     if response.status_code == 200:

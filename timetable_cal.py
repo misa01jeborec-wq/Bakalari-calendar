@@ -49,7 +49,7 @@ def parse_json_timetable(filename: str, days_to_ignore: Iterable[int] | None = N
 
             change = atom.get('Change')
             if change:
-                if change.get('ChangeType') == 'Canceled':
+                if change.get('ChangeType') in ('Canceled', 'Removed'):
                     continue
                 item['change'] = change.get('Description')
 
@@ -65,11 +65,22 @@ def create_ics(lessons: Iterable[Lesson], output_path: str | Path) -> None:
         event = ics.Event()
         subject = lesson.get('subject', '?')
         teacher = lesson.get('teacher', '')
+        location = lesson.get('location', '')
         change = lesson.get('change')
 
-        event.name = f"[Z] {lesson.get('location', '')} - {subject}" if change else f"{lesson.get('location', '')} - {subject}"
-        event.description = f"{teacher} \n[Z] {change}" if change else teacher
-        event.location = lesson.get('location', '')
+        if change and subject == '?':
+            # Whole-class replacement (e.g. a school event) with no assigned subject/room
+            event.name = change
+            event.description = change
+            location = ''
+        elif change:
+            event.name = f"[Z] {location} - {subject}"
+            event.description = f"{teacher} \n[Z] {change}"
+        else:
+            event.name = f"{location} - {subject}"
+            event.description = teacher
+
+        event.location = location
         event.begin = lesson['start']
         event.end = lesson['end']
 
