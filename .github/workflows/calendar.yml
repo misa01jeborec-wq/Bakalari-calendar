@@ -31,6 +31,7 @@ jobs:
           BAKALARI_PASSWORD: ${{ secrets.BAKALARI_PASSWORD }}
         run: |
           python cli.py "$BAKALARI_URL" "$BAKALARI_USERNAME" "$BAKALARI_PASSWORD"
+          
 
       - name: Uložit kalendář
         run: |
